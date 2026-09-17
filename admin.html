@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理者ログイン</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f5f5f5;
+    }
+
+    .box {
+      max-width: 400px;
+      margin: 80px auto;
+      padding: 25px;
+      background: white;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    #message {
+      color: red;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h1>🔐 管理者ログイン</h1>
+
+  <input
+    type="email"
+    id="email"
+    placeholder="メールアドレス"
+  >
+
+  <input
+    type="password"
+    id="password"
+    placeholder="パスワード"
+  >
+
+  <button onclick="login()">ログイン</button>
+
+  <div id="message"></div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = "https://nxdlfpelnyxuflrabqhd.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_Z6xyj-DmmdaibLzPWKlXEA_m1br5tn2";
+
+  async function login() {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const response = await fetch(
+      SUPABASE_URL + "/auth/v1/token?grant_type=password",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+
+      localStorage.setItem(
+        "access_token",
+        data.access_token
+      );
+
+      localStorage.setItem(
+        "user_id",
+        data.user.id
+      );
+
+      window.location.href = "admin-panel.html";
+
+    } else {
+
+      document.getElementById("message").textContent =
+        "ログインできませんでした";
+
+    }
+  }
+</script>
+
+</body>
+</html>
