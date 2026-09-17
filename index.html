@@ -1,88 +1,92 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>釣りスポットマップ</title>
+<title>薬物ダメ絶対マップ</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-    }
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+}
 
-    h1 {
-      margin: 0;
-      padding: 12px;
-      text-align: center;
-      background: white;
-    }
+h1{
+  margin:0;
+  padding:12px;
+  text-align:center;
+  background:white;
+}
 
-    #map {
-      height: calc(100vh - 56px);
-      width: 100%;
-    }
-  </style>
+#map{
+  height:calc(100vh - 56px);
+  width:100%;
+}
+</style>
 </head>
 
 <body>
 
-<h1>🎣 釣りスポットマップ</h1>
+<h1>薬物ダメ絶対マップ</h1>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  const SUPABASE_URL = "https://nxdlfpelnyxuflrabqhd.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_Z6xyj-DmmdaibLzPWKlXEA_m1br5tn2";
 
-  const map = L.map("map").setView([35.5, 137.0], 6);
+const SUPABASE_URL = "https://nxdlfpelnyxuflrabqhd.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Z6xyj-DmmdaibLzPWKlXEA_m1br5tn2";
 
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      attribution: "&copy; OpenStreetMap contributors"
-    }
-  ).addTo(map);
+const map = L.map("map").setView([35.5,137.0],6);
 
-  async function loadFishingSpots() {
-    const response = await fetch(
-      SUPABASE_URL + "/rest/v1/fishing_spots?select=*",
-      {
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + SUPABASE_KEY
-        }
-      }
-    );
-
-    const spots = await response.json();
-
-    spots.forEach(spot => {
-      const marker = L.marker([
-        spot.latitude,
-        spot.longitude
-      ]).addTo(map);
-
-      marker.bindPopup(`
-        <strong>${spot.name}</strong><br>
-        🐟 ${spot.fish || "情報なし"}<br>
-        📅 ${spot.season || "情報なし"}<br>
-        🅿️ 駐車場：${spot.parking ? "あり" : "なし"}<br>
-        🚻 トイレ：${spot.toilet ? "あり" : "なし"}<br>
-        ${spot.description || ""}
-      `);
-    });
+L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  {
+    attribution:"&copy; OpenStreetMap contributors"
   }
+).addTo(map);
 
-  loadFishingSpots();
+
+async function loadSpots(){
+
+  const response = await fetch(
+    SUPABASE_URL +
+    "/rest/v1/fishing_spots?select=*",
+    {
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY
+      }
+    }
+  );
+
+  const spots = await response.json();
+
+  spots.forEach(spot=>{
+
+    const marker = L.marker([
+      spot.latitude,
+      spot.longitude
+    ]).addTo(map);
+
+    marker.bindPopup(`
+      <strong>${spot.name}</strong><br>
+      名前：${spot.fish || "未登録"}<br>
+      住所：${spot.season || "未登録"}<br>
+      電話番号：${spot.description || "未登録"}
+    `);
+
+  });
+
+}
+
+loadSpots();
+
 </script>
 
 </body>
