@@ -75,10 +75,12 @@ async function loadSpots(){
     ]).addTo(map);
 
     marker.bindPopup(`
-      <strong>${spot.name}</strong><br>
-      名前：${spot.fish || "未登録"}<br>
-      住所：${spot.season || "未登録"}<br>
-      電話番号：${spot.description || "未登録"}
+      <strong>建物名：${spot.building_name || "未登録"}</strong><br>
+      名前：${spot.person_name || "未登録"}<br>
+      住所：${spot.address || "未登録"}<br>
+      電話番号：${spot.phone || "未登録"}<br>
+      各種ID：${spot.various_id || "未登録"}<br>
+      説明：${spot.explanation || "未登録"}
     `);
 
   });
