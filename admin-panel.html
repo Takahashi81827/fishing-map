@@ -1,135 +1,123 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>釣りスポット管理</title>
+<title>薬物ダメ絶対マップ 管理画面</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f5f5f5;
-    }
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#f5f5f5;
+}
 
-    h1 {
-      margin: 0;
-      padding: 12px;
-      background: white;
-      text-align: center;
-    }
+h1{
+  margin:0;
+  padding:12px;
+  background:white;
+  text-align:center;
+}
 
-    #map {
-      height: 45vh;
-      width: 100%;
-    }
+#map{
+  height:45vh;
+  width:100%;
+}
 
-    .form {
-      background: white;
-      padding: 15px;
-    }
+.form{
+  background:white;
+  padding:15px;
+}
 
-    input,
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px;
-      margin: 5px 0 10px;
-      font-size: 16px;
-    }
+input,textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px;
+  margin:5px 0 10px;
+  font-size:16px;
+}
 
-    textarea {
-      min-height: 90px;
-    }
+textarea{
+  min-height:90px;
+}
 
-    label {
-      font-weight: bold;
-    }
+label{
+  font-weight:bold;
+}
 
-    button {
-      padding: 12px;
-      font-size: 16px;
-      margin: 5px 0;
-      width: 100%;
-    }
+button{
+  padding:12px;
+  font-size:16px;
+  margin:5px 0;
+  width:100%;
+}
 
-    .spot {
-      background: white;
-      margin-top: 10px;
-      padding: 15px;
-      border-radius: 8px;
-    }
+.spot{
+  background:white;
+  margin-top:10px;
+  padding:15px;
+  border-radius:8px;
+}
 
-    .delete {
-      background: #ddd;
-    }
+.delete{
+  background:#ddd;
+}
 
-    #message {
-      margin: 10px 0;
-      font-weight: bold;
-    }
-  </style>
+#message{
+  margin:10px 0;
+  font-weight:bold;
+}
+</style>
 </head>
 
 <body>
 
-<h1>🎣 釣りスポット管理</h1>
+<h1>薬物ダメ絶対マップ 管理画面</h1>
 
 <div id="map"></div>
 
 <div class="form">
 
-  <p>📍 地図をタップして釣り場の位置を指定してください。</p>
+<p>📍 地図をタップして位置を指定してください。</p>
 
-  <label>釣り場名</label>
-  <input id="name" placeholder="例：○○漁港">
+<label>建物名</label>
+<input id="building_name" placeholder="例：○○ビル">
 
-  <label>都道府県</label>
-  <input id="prefecture" placeholder="例：兵庫県">
+<label>名前</label>
+<input id="person_name" placeholder="例：テスト太郎">
 
-  <label>魚種</label>
-  <input id="fish" placeholder="例：アジ、サバ、チヌ">
+<label>住所</label>
+<input id="address" placeholder="例：兵庫県神戸市（ダミー）">
 
-  <label>シーズン</label>
-  <input id="season" placeholder="例：春〜秋">
+<label>電話番号</label>
+<input id="phone" placeholder="例：000-0000-0000">
 
-  <label>
-    <input type="checkbox" id="parking">
-    駐車場あり
-  </label>
+<label>各種ID</label>
+<input id="various_id" placeholder="例：TEST-001">
 
-  <br>
+<label>説明</label>
+<textarea id="explanation"
+placeholder="説明を入力してください"></textarea>
 
-  <label>
-    <input type="checkbox" id="toilet">
-    トイレあり
-  </label>
+<p id="coordinates">位置：未選択</p>
 
-  <br><br>
+<button onclick="addSpot()">
+➕ 登録
+</button>
 
-  <label>説明</label>
-  <textarea id="description"
-    placeholder="釣り場の特徴や注意事項など"></textarea>
-
-  <p id="coordinates">位置：未選択</p>
-
-  <button onclick="addSpot()">➕ 釣り場を登録</button>
-
-  <div id="message"></div>
+<div id="message"></div>
 
 </div>
 
 <div class="form">
 
-  <h2>登録済み釣り場</h2>
+<h2>登録済み</h2>
 
-  <div id="spotList"></div>
+<div id="spotList"></div>
 
 </div>
 
@@ -140,68 +128,83 @@
 const SUPABASE_URL = "https://nxdlfpelnyxuflrabqhd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Z6xyj-DmmdaibLzPWKlXEA_m1br5tn2";
 
-const token = localStorage.getItem("access_token");
+const token =
+localStorage.getItem("access_token");
 
-if (!token) {
-  window.location.href = "admin.html";
+if(!token){
+  window.location.href="admin.html";
 }
 
-const map = L.map("map").setView([35.5, 137.0], 6);
+
+const map =
+L.map("map").setView([35.5,137.0],6);
+
 
 L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
-    attribution: "&copy; OpenStreetMap contributors"
+    attribution:"&copy; OpenStreetMap contributors"
   }
 ).addTo(map);
 
-let selectedLat = null;
-let selectedLng = null;
-let selectedMarker = null;
-let spotMarkers = [];
 
-map.on("click", function(e) {
+let selectedLat=null;
+let selectedLng=null;
+let selectedMarker=null;
 
-  selectedLat = e.latlng.lat;
-  selectedLng = e.latlng.lng;
+let spotMarkers=[];
 
-  if (selectedMarker) {
+
+/* 地図タップ */
+
+map.on("click",function(e){
+
+  selectedLat=e.latlng.lat;
+  selectedLng=e.latlng.lng;
+
+  if(selectedMarker){
     map.removeLayer(selectedMarker);
   }
 
-  selectedMarker = L.marker([
-    selectedLat,
-    selectedLng
-  ]).addTo(map);
+  selectedMarker=
+    L.marker([
+      selectedLat,
+      selectedLng
+    ]).addTo(map);
 
-  document.getElementById("coordinates").textContent =
-    "位置：" +
-    selectedLat.toFixed(6) +
-    ", " +
-    selectedLng.toFixed(6);
+  document.getElementById(
+    "coordinates"
+  ).textContent=
+    "位置："+selectedLat.toFixed(6)+
+    ", "+selectedLng.toFixed(6);
+
 });
 
 
-async function checkAdmin() {
+/* 管理者確認 */
 
-  const response = await fetch(
-    SUPABASE_URL +
-    "/rest/v1/admin_users?user_id=eq." +
-    localStorage.getItem("user_id") +
+async function checkAdmin(){
+
+  const response=await fetch(
+    SUPABASE_URL+
+    "/rest/v1/admin_users?user_id=eq."+
+    localStorage.getItem("user_id")+
     "&select=user_id",
     {
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + token
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+token
       }
     }
   );
 
-  const data = await response.json();
+  const data=await response.json();
 
-  if (!response.ok || data.length === 0) {
-    document.body.innerHTML =
+  if(!response.ok || data.length===0){
+
+    document.body.innerHTML=
       "<h2 style='padding:20px'>管理者権限がありません。</h2>";
+
     return false;
   }
 
@@ -209,174 +212,274 @@ async function checkAdmin() {
 }
 
 
-async function addSpot() {
+/* 登録 */
 
-  if (selectedLat === null) {
-    alert("先に地図をタップして位置を指定してください。");
+async function addSpot(){
+
+  if(selectedLat===null){
+
+    alert(
+      "先に地図をタップして位置を指定してください。"
+    );
+
     return;
   }
 
-  const name =
-    document.getElementById("name").value.trim();
 
-  if (!name) {
-    alert("釣り場名を入力してください。");
+  const buildingName=
+    document.getElementById(
+      "building_name"
+    ).value.trim();
+
+
+  if(!buildingName){
+
+    alert("建物名を入力してください。");
+
     return;
   }
 
-  const spot = {
-    name: name,
-    prefecture:
-      document.getElementById("prefecture").value,
-    latitude: selectedLat,
-    longitude: selectedLng,
-    fish:
-      document.getElementById("fish").value,
-    season:
-      document.getElementById("season").value,
-    parking:
-      document.getElementById("parking").checked,
-    toilet:
-      document.getElementById("toilet").
-checked,
-    description:
-      document.getElementById("description").value
+
+  const spot={
+
+    name:buildingName,
+
+    latitude:selectedLat,
+
+    longitude:selectedLng,
+
+    building_name:buildingName,
+
+    person_name:
+      document.getElementById(
+        "person_name"
+      ).value,
+
+    address:
+      document.getElementById(
+        "address"
+      ).value,
+
+    phone:
+      document.getElementById(
+        "phone"
+      ).value,
+
+    various_id:
+      document.getElementById(
+        "various_id"
+      ).value,
+
+    explanation:
+      document.getElementById(
+        "explanation"
+      ).value
+
   };
 
-  const response = await fetch(
-    SUPABASE_URL + "/rest/v1/fishing_spots",
+
+  const response=await fetch(
+
+    SUPABASE_URL+
+    "/rest/v1/fishing_spots",
+
     {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + token,
-        "Prefer": "return=representation"
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json",
+"apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+token,
+        "Prefer":"return=representation"
       },
-      body: JSON.stringify(spot)
+
+      body:JSON.stringify(spot)
+
     }
+
   );
 
-  if (response.ok) {
 
-    document.getElementById("message").textContent =
+  if(response.ok){
+
+    document.getElementById(
+      "message"
+    ).textContent=
       "✅ 登録しました！";
 
-    document.getElementById("name").value = "";
-    document.getElementById("prefecture").value = "";
-    document.getElementById("fish").value = "";
-    document.getElementById("season").value = "";
-    document.getElementById("description").value = "";
-    document.getElementById("parking").checked = false;
-    document.getElementById("toilet").checked = false;
+    clearForm();
 
     loadSpots();
 
-  } else {
+  }else{
 
-    const error = await response.text();
+    const error=
+      await response.text();
 
-    document.getElementById("message").textContent =
-      "❌ 登録できませんでした：" + error;
+    document.getElementById(
+      "message"
+    ).textContent=
+      "❌ 登録できませんでした："+error;
+
   }
+
 }
 
 
-async function loadSpots() {
+/* 入力欄クリア */
 
-  spotMarkers.forEach(marker => {
-    map.removeLayer(marker);
-  });
+function clearForm(){
 
-  spotMarkers = [];
+  document.getElementById(
+    "building_name"
+  ).value="";
 
-  const response = await fetch(
-    SUPABASE_URL +
-    "/rest/v1/fishing_spots?select=*",
-    {
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + token
-      }
-    }
+  document.getElementById(
+    "person_name"
+  ).value="";
+
+  document.getElementById(
+    "address"
+  ).value="";
+
+  document.getElementById(
+    "phone"
+  ).value="";
+
+  document.getElementById(
+    "various_id"
+  ).value="";
+
+  document.getElementById(
+    "explanation"
+  ).value="";
+
+  selectedLat=null;
+  selectedLng=null;
+
+  document.getElementById(
+    "coordinates"
+  ).textContent=
+    "位置：未選択";
+
+  if(selectedMarker){
+
+    map.removeLayer(selectedMarker);
+
+    selectedMarker=null;
+
+  }
+
+}
+
+
+/* 登録済み表示 */
+
+async function loadSpots(){
+
+  spotMarkers.forEach(
+    marker=>map.removeLayer(marker)
   );
 
-  const spots = await response.json();
+  spotMarkers=[];
 
-  const list =
-    document.getElementById("spotList");
 
-  list.innerHTML = "";
+  const response=await fetch(
 
-  spots.forEach(spot => {
+    SUPABASE_URL+
+    "/rest/v1/fishing_spots?select=*",
 
-    const marker = L.marker([
-      spot.latitude,
-      spot.longitude
-    ]).addTo(map);
+    {
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+token
+      }
+    }
 
-    marker.bindPopup(
-      "<strong>" +
-      spot.name +
-      "</strong>"
+  );
+
+
+  const spots=
+    await response.json();
+
+
+  const list=
+    document.getElementById(
+      "spotList"
     );
+
+  list.innerHTML="";
+
+
+  spots.forEach(spot=>{
+
+    const marker=
+      L.marker([
+        spot.latitude,
+        spot.longitude
+      ]).addTo(map);
+
+
+    marker.bindPopup(`
+      <strong>
+        建物名：${spot.building_name || "未登録"}
+      </strong><br>
+      名前：${spot.person_name || "未登録"}<br>
+      住所：${spot.address || "未登録"}<br>
+      電話番号：${spot.phone || "未登録"}<br>
+      各種ID：${spot.various_id || "未登録"}<br>
+      説明：${spot.explanation || "未登録"}
+    `);
+
 
     spotMarkers.push(marker);
 
-    const div = document.createElement("div");
 
-    div.className = "spot";
+    const div=
+      document.createElement("div");
 
-    div.innerHTML = `
-      <strong>${spot.name}</strong><br>
-      🐟 ${spot.fish || "未入力"}<br>
-      📅 ${spot.season || "未入力"}<br>
-      🅿️ 駐車場：${spot.parking ? "あり" : "なし"}<br>
-      🚻 トイレ：${spot.toilet ? "あり" : "なし"}<br>
-      <br>
-      <button class="delete"
-        onclick="deleteSpot(${spot.id})">
-        🗑️ 削除
-      </button>
+    div.className="spot";
+
+
+    div.innerHTML=`
+
+      <strong>
+        ${spot.building_name || "未登録"}
+      </strong><br><br>
+
+      名前：
+      ${spot.person_name || "未登録"}<br>
+
+      住所：
+      ${spot.address || "未登録"}<br>
+
+      電話番号：
+      ${spot.phone || "未登録"}<br>
+
+      各種ID：
+      ${spot.various_id || "未登録"}<br>
+
+      説明：
+      ${spot.explanation || "未登録"}
+
     `;
 
+
     list.appendChild(div);
+
   });
+
 }
 
 
-async function deleteSpot(id) {
+/* 起動 */
 
-  if (!confirm("この釣り場を削除しますか？")) {
-    return;
-  }
+(async function(){
 
-  const response = await fetch(
-    SUPABASE_URL +
-    "/rest/v1/fishing_spots?id=eq." +
-    id,
-    {
-      method: "DELETE",
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + token
-      }
-    }
-  );
+  const isAdmin=
+    await checkAdmin();
 
-  if (response.ok) {
-    loadSpots();
-  } else {
-    alert("削除できませんでした。");
-  }
-}
-
-
-(async function() {
-
-  const isAdmin = await checkAdmin();
-
-  if (isAdmin) {
+  if(isAdmin){
     loadSpots();
   }
 
