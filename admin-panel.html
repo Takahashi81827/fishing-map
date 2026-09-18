@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>薬物ダメ絶対マップ 管理画面</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -25,7 +24,7 @@ h1{
   padding:15px;
 }
 
-input, textarea, button{
+input,textarea,button{
   width:100%;
   box-sizing:border-box;
   padding:10px;
@@ -46,6 +45,21 @@ button{
   padding:10px;
   font-weight:bold;
 }
+
+.spot{
+  border:1px solid #ccc;
+  padding:12px;
+  margin:10px;
+  border-radius:8px;
+}
+
+.delete{
+  background:#d00;
+  color:white;
+  border:0;
+  border-radius:5px;
+  padding:10px;
+}
 </style>
 </head>
 
@@ -55,29 +69,33 @@ button{
 
 <div id="form">
 
-  <input id="building_name" placeholder="建物名">
+<input id="building_name" placeholder="建物名">
 
-  <input id="person_name" placeholder="名前">
+<input id="person_name" placeholder="名前">
 
-  <input id="address" placeholder="住所">
+<input id="address" placeholder="住所">
 
-  <button onclick="searchAddress()">住所検索</button>
+<button onclick="searchAddress()">住所検索</button>
 
-  <input id="phone" placeholder="電話番号">
+<input id="phone" placeholder="電話番号">
 
-  <input id="various_id" placeholder="各種ID">
+<input id="various_id" placeholder="各種ID">
 
-  <textarea id="explanation" placeholder="説明"></textarea>
+<textarea id="explanation" placeholder="説明"></textarea>
 
-  <div id="message"></div>
+<div id="message"></div>
 
 </div>
 
 <div id="map"></div>
 
 <div id="form">
-  <button onclick="addSpot()">この場所で登録</button>
+<button onclick="addSpot()">この場所で登録</button>
 </div>
+
+<h2 style="padding:10px;">登録済み</h2>
+
+<div id="spotList"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -132,6 +150,8 @@ async function checkAdmin(){
     return false;
   }
 
+  loadSpots();
+
   return true;
 }
 
@@ -144,8 +164,10 @@ async function searchAddress(){
     document.getElementById("address").value.trim();
 
   if(!address){
+
     document.getElementById("message").textContent =
       "住所を入力してください";
+
     return;
   }
 
@@ -158,15 +180,11 @@ async function searchAddress(){
       "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&q=" +
       encodeURIComponent(address);
 
-    const response = await fetch(url,{
-      headers:{
-        "Accept":"application/json"
-      }
-    });
+    const response = await fetch(url);
 
     const data = await response.json();
 
-    if(data.length === 0){
+    if(data.length===0){
 
       document.getElementById("message").textContent =
         "住所が見つかりませんでした";
@@ -187,16 +205,20 @@ async function searchAddress(){
       draggable:true
     }).addTo(map);
 
-    marker.bindPopup("このピンの場所で登録します").openPopup();
+    marker.bindPopup(
+      "このピンの場所で登録します"
+    ).openPopup();
 
     document.getElementById("message").textContent =
-      "場所を取得しました。必要ならピンを動かして調整できます。";
+      "ピンを置きました。必要なら動かして調整できます。";
 
   }catch(error){
 
     document.getElementById("message").textContent =
       "住所検索に失敗しました";
+
   }
+
 }
 
 
@@ -212,7 +234,9 @@ map.on("click",function(e){
     draggable:true
   }).addTo(map);
 
-  marker.bindPopup("この場所で登録します").openPopup();
+  marker.bindPopup(
+    "この場所で登録します"
+  ).openPopup();
 
 });
 
@@ -224,7 +248,7 @@ async function addSpot(){
   if(!marker){
 
     document.getElementById("message").textContent =
-      "先に住所検索するか、地図をタップしてピンを置いてください";
+      "先に住所検索してください";
 
     return;
   }
@@ -233,16 +257,14 @@ async function addSpot(){
 
   const buildingName =
     document.getElementById("building_name").value;
-
-  const personName =
+const personName =
     document.getElementById("person_name").value;
 
   const address =
     document.getElementById("address").value;
 
   const phone =
-    document.
-getElementById("phone").value;
+    document.getElementById("phone").value;
 
   const variousId =
     document.getElementById("various_id").value;
@@ -294,6 +316,8 @@ getElementById("phone").value;
     document.getElementById("various_id").value="";
     document.getElementById("explanation").value="";
 
+    loadSpots();
+
   }else{
 
     const error = await response.text();
@@ -302,6 +326,115 @@ getElementById("phone").value;
       "登録に失敗しました";
 
     console.log(error);
+
+  }
+
+}
+
+
+/* 登録済みデータ表示 */
+
+async function loadSpots(){
+
+  const response = await fetch(
+    SUPABASE_URL +
+    "/rest/v1/fishing_spots?select=*",
+    {
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+token
+      }
+    }
+  );
+
+  const spots = await response.json();
+
+  const list =
+    document.getElementById("spotList");
+
+  list.innerHTML="";
+
+
+  spots.forEach(spot=>{
+
+    const div =
+      document.createElement("div");
+
+    div.className="spot";
+
+    div.innerHTML=`
+
+      <strong>
+        ${spot.building_name || "未登録"}
+      </strong>
+
+      <br>
+      名前：${spot.person_name || "未登録"}
+
+      <br>
+      住所：${spot.address || "未登録"}
+
+      <br>
+      電話番号：${spot.phone || "未登録"}
+
+      <br>
+      各種ID：${spot.various_id || "未登録"}
+
+      <br>
+      説明：${spot.explanation || "未登録"}
+
+      <br><br>
+
+      <button
+        class="delete"
+        onclick="deleteSpot(${spot.id})">
+        この登録を削除
+      </button>
+
+    `;
+
+    list.appendChild(div);
+
+  });
+
+}
+
+
+/* 削除 */
+
+async function deleteSpot(id){
+
+  if(!confirm("この登録を削除しますか？")){
+    return;
+  }
+
+  const response = await fetch(
+    SUPABASE_URL +
+    "/rest/v1/fishing_spots?id=eq." +
+    id,
+    {
+      method:"DELETE",
+
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+token
+      }
+    }
+  );
+
+
+  if(response.ok){
+
+    document.getElementById("message").textContent =
+      "削除しました！";
+
+    loadSpots();
+
+  }else{
+
+    document.getElementById("message").textContent =
+      "削除に失敗しました";
+
   }
 
 }
